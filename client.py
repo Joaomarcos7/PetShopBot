@@ -100,13 +100,14 @@ def listen_for_messages_from_server(client):
 
         message = client.recv(2048).decode('utf-8')
         if message != '':
-            username = message.split("~")[0]
-            content = message.split('~')[1]
+            username = message.split("->")[0]
+            print(message.split('->'))
+            content = message.split("->")[1]
 
             add_message(f"[{username}] {content}")
             
         else:
-            messagebox.showerror("Error", "Message recevied from client is empty")
+            messagebox.showerror("Error", "Message received from client is empty")
 
 # main function
 def main():

@@ -1,39 +1,65 @@
 import socket
 import threading
-
+import time
+from FilaEncadeada import Fila,Head,No
+import keyboard as kb
+##from Arvore import AVLTree,Node
 
 HOST = '127.0.0.1'
 PORT = 1234 # You can use any port between 0 to 65535
 LISTENER_LIMIT = 5
 active_clients = [] # List of all currently connected users, receives a list with username and client object
+filadeespera=Fila()
+filadeespera2=Fila()
 tosa=[]
 medico=[]
+##Arvore=AVLTree()
 # Function to listen for upcoming messages from a client
 def listen_for_messages(client, username):
+    
 
     while 1:
 
         message = client.recv(2048).decode('utf-8')
         if message != '':
-            
-            final_msg = username + '~' + message
+            final_msg = username + '->' + message
+            send_messages_to_all(final_msg)
             if message == '1':
-                if len(tosa) <= 3:
+                if len(tosa) < 3:
                     tosa.append(username)
                     print(tosa)
+                    send_message_to_client(client,'SERVER->Seu Pet esta na tosa')
                 else:
-                    pass ##filadeespera
+                    filadeespera.enfileira(username)
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}')
             elif message =='2':
-                if len(medico) <= 3:
+                if len(medico) < 3:
+                    time.sleep(1.5)
+                    cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
+                    send_message_to_client(client,cadastro)
                     medico.append(username)
+                
                 else:
-                    pass #fila de espera
+                    filadeespera2.enfileira(username)
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera2.tamanho()} posição')
+                    time.sleep(1.5)
+                    cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
+                    send_message_to_client(client,cadastro)
+
+            
+            if len(message)>7:
+                message=message.split(',')
+                print(message)
+                #arvore.insert(messsage)
+                
+                time.sleep(1.5)
+                conclusao='SERVER->Cadastro concluído!'
+                send_message_to_client(client,conclusao)
             else:
                 pass
-            send_messages_to_all(final_msg)
 
         else:
-            print(f"The message send from client {username} is empty")
+            print(f" SERVER->The message send from client {username} is empty")
 
 
 # Function to send message to a single client
@@ -59,16 +85,18 @@ def client_handler(client):
         username = client.recv(2048).decode('utf-8')
         if username != '':
             active_clients.append((username, client))
-            prompt_message = "SERVER~" + f"{username} added to the chat"
+            prompt_message = "SERVER->" + f"{username} added to the chat"
             send_messages_to_all(prompt_message)
-            welcome='SERVER~' + f"Olá {username} Seja bem vindo ao nosso Pet Shop!"
-            script=" Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3- Consultar meu Pet"
+            welcome='SERVER->' + f"Olá {username} Seja bem vindo ao nosso Pet Shop!"
+            script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3 Consultar meu Pet"
             send_message_to_client(client,welcome)
+            time.sleep(1.5)
             send_message_to_client(client,script)
-            print(username)
+            
             break
         else:
             print("Client username is empty")
+        
     
 
     threading.Thread(target=listen_for_messages, args=(client, username, )).start()
