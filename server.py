@@ -3,6 +3,7 @@ import threading
 import time
 from FilaEncadeada import Fila,Head,No
 import keyboard as kb
+from threading import *
 ##from Arvore import AVLTree,Node
 
 HOST = '127.0.0.1'
@@ -13,31 +14,41 @@ filadeespera=Fila()
 filadeespera2=Fila()
 tosa=[]
 medico=[]
+semaforo=Semaphore(1)
 ##Arvore=AVLTree()
 # Function to listen for upcoming messages from a client
+
 def listen_for_messages(client, username):
     
-
     while 1:
 
         message = client.recv(2048).decode('utf-8')
         if message != '':
             final_msg = username + '->' + message
-            send_messages_to_all(final_msg)
+            send_message_to_client(client,final_msg)
             if message == '1':
+                semaforo.acquire()
                 if len(tosa) < 3:
                     tosa.append(username)
                     print(tosa)
                     send_message_to_client(client,'SERVER->Seu Pet esta na tosa')
-                else:
-                    filadeespera.enfileira(username)
-                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}')
-            elif message =='2':
-                if len(medico) < 3:
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
+                else:
+                    filadeespera.enfileira(username)
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}')
+                semaforo.release()
+               
+            elif message =='2':
+                semaforo.acquire()
+                if len(medico) < 3:
                     medico.append(username)
+                    send_message_to_client(client,'SERVER->Seu Pet esta na consulta')
+                    time.sleep(1.5)
+                    cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
+                    send_message_to_client(client,cadastro)
+                   
                 
                 else:
                     filadeespera2.enfileira(username)
@@ -45,7 +56,7 @@ def listen_for_messages(client, username):
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
-
+                semaforo.release()
             
             if len(message)>7:
                 message=message.split(',')
@@ -53,10 +64,14 @@ def listen_for_messages(client, username):
                 #arvore.insert(messsage)
                 
                 time.sleep(1.5)
-                conclusao='SERVER->Cadastro concluído!'
+                conclusao='SERVER->Cadastro concluído com sucesso! Obrigado pela confiança!'
                 send_message_to_client(client,conclusao)
             else:
                 pass
+            if message == 'QUIT':
+                client.close()
+                send_message_to_client(client,'SERVER->Você saiu do chat')
+                break
 
         else:
             print(f" SERVER->The message send from client {username} is empty")
@@ -86,9 +101,9 @@ def client_handler(client):
         if username != '':
             active_clients.append((username, client))
             prompt_message = "SERVER->" + f"{username} added to the chat"
-            send_messages_to_all(prompt_message)
+            send_message_to_client(client,prompt_message)
             welcome='SERVER->' + f"Olá {username} Seja bem vindo ao nosso Pet Shop!"
-            script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3 Consultar meu Pet"
+            script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3 Consultar meu Pet" + "\n QUIT- para logout do server"
             send_message_to_client(client,welcome)
             time.sleep(1.5)
             send_message_to_client(client,script)

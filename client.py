@@ -53,8 +53,12 @@ def send_message():
     if message != '':
         client.sendall(message.encode())
         message_textbox.delete(0, len(message))
+        if message == 'QUIT':
+            client.close()
+            root.destroy()
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
+
 
 root = tk.Tk()
 root.geometry("600x600")
@@ -103,6 +107,10 @@ def listen_for_messages_from_server(client):
             username = message.split("->")[0]
             print(message.split('->'))
             content = message.split("->")[1]
+            if message=='QUIT':
+                client.close()
+                add_message("[SERVER] Client has left the chat")
+                break
 
             add_message(f"[{username}] {content}")
             
