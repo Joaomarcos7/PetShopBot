@@ -2,7 +2,6 @@ import socket
 import threading
 import time
 from FilaEncadeada import Fila,Head,No
-import keyboard as kb
 from threading import *
 ##from Arvore import AVLTree,Node
 
@@ -37,13 +36,14 @@ def listen_for_messages(client, username):
                     send_message_to_client(client,cadastro)
                 else:
                     filadeespera.enfileira(username)
-                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}')
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}ª posição')
                 semaforo.release()
                
             elif message =='2':
                 semaforo.acquire()
                 if len(medico) < 3:
                     medico.append(username)
+                    print(medico)
                     send_message_to_client(client,'SERVER->Seu Pet esta na consulta')
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
@@ -60,7 +60,7 @@ def listen_for_messages(client, username):
             
             if len(message)>7:
                 message=message.split(',')
-                print(message)
+                print(message) #CADASTRO HASH(MESSAGE)
                 #arvore.insert(messsage)
                 
                 time.sleep(1.5)
@@ -69,10 +69,22 @@ def listen_for_messages(client, username):
             else:
                 pass
             if message == 'QUIT':
-                client.close()
+                
+                for i in range(len(tosa)):
+                    if tosa[i]==username:
+                        tosa.pop(i)
+                        print(tosa)
+                        #if filadeespra.estavazia():
+                        #tosa.append(filadeespera.desenfileira())
+                    else:
+                        pass
+                for i in range(len(medico)):
+                    if medico[i]==username:
+                        medico.pop(i)
                 send_message_to_client(client,'SERVER->Você saiu do chat')
+                
                 break
-
+                
         else:
             print(f" SERVER->The message send from client {username} is empty")
 
