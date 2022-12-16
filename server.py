@@ -2,7 +2,8 @@ import socket
 import threading
 import time
 from FilaEncadeada import Fila,Head,No
-from threading import *
+from threading import Thread, Semaphore
+from arvore import AVLTree
 ##from Arvore import AVLTree,Node
 
 HOST = '127.0.0.1'
@@ -14,7 +15,9 @@ filadeespera2=Fila()
 tosa=[]
 medico=[]
 semaforo=Semaphore(1)
+arvore=AVLTree()
 ##Arvore=AVLTree()
+
 # Function to listen for upcoming messages from a client
 
 def listen_for_messages(client, username):
@@ -30,13 +33,16 @@ def listen_for_messages(client, username):
                 if len(tosa) < 3:
                     tosa.append(username)
                     print(tosa)
+                    semaforo.release()
                     send_message_to_client(client,'SERVER->Seu Pet esta na tosa')
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
                 else:
                     filadeespera.enfileira(username)
-                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera.tamanho()}ª posição')
+                    tamfila=filadeespera.tamanho()
+                    semaforo.release()
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {tamfila}ª posição')
                 semaforo.release()
                
             elif message =='2':
@@ -44,6 +50,7 @@ def listen_for_messages(client, username):
                 if len(medico) < 3:
                     medico.append(username)
                     print(medico)
+                    semaforo.release()
                     send_message_to_client(client,'SERVER->Seu Pet esta na consulta')
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
@@ -52,7 +59,9 @@ def listen_for_messages(client, username):
                 
                 else:
                     filadeespera2.enfileira(username)
-                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {filadeespera2.tamanho()} posição')
+                    tamfila2=filadeespera2.tamanho()
+                    semaforo.release()
+                    send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {tamfila2} posição')
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
