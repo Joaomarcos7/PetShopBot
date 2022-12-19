@@ -54,8 +54,10 @@ def send_message():
         client.sendall(message.encode())
         message_textbox.delete(0, len(message))
         if message == 'QUIT':
-            client.close()
+            messagebox.showinfo(title='Sair do chat', message="Você saiu do chat!")          
             root.destroy()
+            client.close()
+            pass
     else:
         messagebox.showerror("Empty message", "Message cannot be empty")
 

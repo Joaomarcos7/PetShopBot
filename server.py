@@ -100,7 +100,6 @@ def listen_for_messages(client, username):
 
 # Function to send message to a single client
 def send_message_to_client(client, message):
-
     client.sendall(message.encode())
 
 # Function to send any new message to all the clients that
