@@ -1,21 +1,25 @@
 
 class User:
-    def __init__(self, count:any, nome:str):
-        self.id = count
-        self.nome = nome
-        self.pets = list()
+    def __init__(self, cpf:any, nome:str):
+        self.__cpf = cpf
+        self.__nome = nome
+        self.__pets = list()
     
-    def __str__(self):
-        return str(str(self.id) + ' - ' + self.nome)
 
     def getPets(self):
-        return self.pets
+        return self.__pets
     
+
     def setPets(self,novoPet):
-        self.pets.append(novoPet)
+        self.__pets.append(novoPet)
     
-    def getId(self):
-        return self.id
+    @property
+    def getCpf(self):
+        return self.__cpf
     
+    @property
     def getNome(self):
-        return self.nome
+        return self.__nome
+
+    def __str__(self):
+        return str(str(self.__cpf) + ' - ' + self.__nome)
