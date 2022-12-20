@@ -3,7 +3,9 @@ import threading
 import time
 from FilaEncadeada import Fila,Head,No
 from threading import Thread, Semaphore
-from arvore import AVLTree
+from AVLTree import AVLTree
+from user import User
+#from arvore import AVLTree
 ##from Arvore import AVLTree,Node
 
 HOST = '127.0.0.1'
@@ -12,16 +14,19 @@ LISTENER_LIMIT = 5
 active_clients = [] # List of all currently connected users, receives a list with username and client object
 filadeespera=Fila()
 filadeespera2=Fila()
-tosa=[]
-medico=[]
+tosa=list()
+medico=list()
+cadastro_clientes = AVLTree()
+usuarios = list()
 semaforo=Semaphore(1)
-arvore=AVLTree()
+
+#arvore=AVLTree()
 ##Arvore=AVLTree()
 
 # Function to listen for upcoming messages from a client
 
 def listen_for_messages(client, username):
-    
+    id_user = 0
     while 1:
 
         message = client.recv(2048).decode('utf-8')
@@ -39,10 +44,15 @@ def listen_for_messages(client, username):
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
                 else:
+                    
                     filadeespera.enfileira(username)
                     tamfila=filadeespera.tamanho()
                     semaforo.release()
                     send_message_to_client(client,f'SERVER->Seu Pet esta na fila de espera, ele esta na {tamfila}ª posição')
+                    time.sleep(1.5)
+                    cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
+                    send_message_to_client(client,cadastro)
+                    threading.Thread(target=limpaTosa).start()
                 semaforo.release()
                
             elif message =='2':
@@ -54,8 +64,7 @@ def listen_for_messages(client, username):
                     send_message_to_client(client,'SERVER->Seu Pet esta na consulta')
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
-                    send_message_to_client(client,cadastro)
-                   
+                    send_message_to_client(client,cadastro)                  
                 
                 else:
                     filadeespera2.enfileira(username)
@@ -65,31 +74,63 @@ def listen_for_messages(client, username):
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
+                    threading.Thread(target=limpaMedico).start()
                 semaforo.release()
             
+            elif message =='3':
+                achouUsuario = False
+                for usuario in usuarios:
+                    if usuario.getNome() == username:
+                        achouUsuario = True
+                        info = 'SERVER->Seus pets são: '
+                        send_message_to_client(client,info)
+                        time.sleep(2)
+                        for pet in usuario.getPets():
+                            my_pet = str(pet[0] + ' - ' + pet[1] + ' - ' + pet[2])
+                            send_message_to_client(client, 'SERVER->' + my_pet)
+                
+                if not(achouUsuario):
+                    send_message_to_client(client, "SERVER->Você ainda não cadastrou um pet!")
+                    
+
             if len(message)>7:
                 message=message.split(',')
-                print(message) #CADASTRO HASH(MESSAGE)
-                #arvore.insert(messsage)
+                encontrouUsuario = False
+                for u in usuarios:
+                    if u.getNome() == username:
+                        encontrouUsuario = True
+                        u.setPets(list(message))
                 
+                if not(encontrouUsuario):
+                    id_user += 1
+                    novo_usuario = User(id_user,username)
+                    novo_usuario.setPets(list(message))
+
+                    cadastro_clientes.insert(novo_usuario.getId())
+                    usuarios.append(novo_usuario)
+
+                #print(message) #CADASTRO HASH(MESSAGE)
+                #arvore.insert(messsage)
+                #        
                 time.sleep(1.5)
                 conclusao='SERVER->Cadastro concluído com sucesso! Obrigado pela confiança!'
                 send_message_to_client(client,conclusao)
             else:
                 pass
-            if message == 'QUIT':
-                
+            if message == 'QUIT':   
                 for i in range(len(tosa)):
                     if tosa[i]==username:
                         tosa.pop(i)
                         print(tosa)
-                        #if filadeespra.estavazia():
-                        #tosa.append(filadeespera.desenfileira())
+                        if filadeespera.estaVazia() == False:
+                            tosa.insert(i,filadeespera.desenfileira())
                     else:
                         pass
                 for i in range(len(medico)):
                     if medico[i]==username:
                         medico.pop(i)
+                        if filadeespera2.estaVazia() == False:
+                            medico.insert(i,filadeespera2.desenfileira())
                 send_message_to_client(client,'SERVER->Você saiu do chat')
                 
                 break
@@ -162,8 +203,25 @@ def main():
         client, address = server.accept()
         print(f"Successfully connected to client {address[0]} {address[1]}")
 
-        threading.Thread(target=client_handler, args=(client, )).start()
 
+        threading.Thread(target=client_handler, args=(client, )).start()
+        
+
+def limpaTosa():
+    while filadeespera.estaVazia() == False:   
+        time.sleep(30)
+        tosa.clear()
+        proximo = filadeespera.desenfileira()
+        tosa.append(proximo)
+        print(tosa)
+
+def limpaMedico():
+    while filadeespera2.estaVazia() == False:   
+        time.sleep(30)
+        medico.clear()
+        proximo = filadeespera2.desenfileira()
+        medico.append(proximo)
+        print(medico)
 
 if __name__ == '__main__':
     main()
