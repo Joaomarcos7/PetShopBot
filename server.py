@@ -52,7 +52,7 @@ def listen_for_messages(client, username):
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
-                    threading.Thread(target=limpaTosa).start()
+                threading.Thread(target=limpaTosa,args=(client, username, )).start()
                 semaforo.release()
                
             elif message =='2':
@@ -74,7 +74,7 @@ def listen_for_messages(client, username):
                     time.sleep(1.5)
                     cadastro=f'SERVER->Ok! {username}, vamos fazer seu cadastro... Por favor nos informe nome do pet, tipo de pelo e tipo do animal'
                     send_message_to_client(client,cadastro)
-                    threading.Thread(target=limpaMedico).start()
+                threading.Thread(target=limpaMedico,args=(client, username, ) ).start()
                 semaforo.release()
             
             elif message =='3':
@@ -113,11 +113,11 @@ def listen_for_messages(client, username):
                 #arvore.insert(messsage)
                 #        
                 time.sleep(1.5)
-                conclusao='SERVER->Cadastro concluído com sucesso! Obrigado pela confiança!'
+                conclusao='SERVER->Cadastro concluído com sucesso! Obrigado pela confiança! digite QUIT para sair do chat'
                 send_message_to_client(client,conclusao)
             else:
                 pass
-            if message == 'QUIT':   
+            if message== 'QUIT':   
                 for i in range(len(tosa)):
                     if tosa[i]==username:
                         tosa.pop(i)
@@ -207,21 +207,32 @@ def main():
         threading.Thread(target=client_handler, args=(client, )).start()
         
 
-def limpaTosa():
+def limpaTosa(client,username):
     while filadeespera.estaVazia() == False:   
-        time.sleep(30)
-        tosa.clear()
+        time.sleep(60)
+        for i in tosa:
+            if i==username:
+                tosa.pop(i)
         proximo = filadeespera.desenfileira()
         tosa.append(proximo)
+        send_message_to_client(client,'Server- Chegou sua vez! Voce esta no medico agora...')
         print(tosa)
 
-def limpaMedico():
+
+def limpaMedico(client,username):
     while filadeespera2.estaVazia() == False:   
-        time.sleep(30)
-        medico.clear()
+        time.sleep(60)
+        for i in medico:
+            if i==username:
+                medico.pop(i)
         proximo = filadeespera2.desenfileira()
         medico.append(proximo)
+        send_message_to_client(client,'Server- Chegou sua vez! Voce esta no medico agora...')
         print(medico)
+
+
+
+
 
 if __name__ == '__main__':
     main()
