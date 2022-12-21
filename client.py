@@ -33,15 +33,15 @@ def connect():
         # Connect to the server
         client.connect((HOST, PORT))
         print("Successfully connected to server")
-        add_message("[SERVER] Successfully connected to the server")
+        add_message("[SERVER] Conectado com sucesso ao servidor")
     except:
-        messagebox.showerror("Unable to connect to server", f"Unable to connect to server {HOST} {PORT}")
+        messagebox.showerror("Não foi possível conectar", f"Não foi possível se conectar ao servidor {HOST} {PORT}")
 
     username = username_textbox.get()
     if username != '':
         client.sendall(username.encode())
     else:
-        messagebox.showerror("Invalid username", "Username cannot be empty")
+        messagebox.showerror("Inválido username", "Username não pode ser vazio")
 
     threading.Thread(target=listen_for_messages_from_server, args=(client, )).start()
 
@@ -57,9 +57,9 @@ def send_message():
             messagebox.showinfo(title='Sair do chat', message="Você saiu do chat!")          
             root.destroy()
             client.close()
-            pass
+            
     else:
-        messagebox.showerror("Empty message", "Message cannot be empty")
+        messagebox.showerror("Mensagem vazia", "Mensagem não pode ser vazia")
 
 
 root = tk.Tk()
@@ -110,14 +110,14 @@ def listen_for_messages_from_server(client):
             print(message.split('->'))
             content = message.split("->")[1]
             if message=='QUIT':
+                add_message("[SERVER]->Cliente saiu do chat")
                 client.close()
-                add_message("[SERVER] Client has left the chat")
                 break
 
             add_message(f"[{username}] {content}")
             
         else:
-            messagebox.showerror("Error", "Message received from client is empty")
+            messagebox.showerror("Erro", "Messagem do cliente é vazia")
 
 # main function
 def main():

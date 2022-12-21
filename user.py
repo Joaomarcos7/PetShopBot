@@ -4,22 +4,30 @@ class User:
         self.__cpf = cpf
         self.__nome = nome
         self.__pets = list()
+        self.__status=None
     
-
-    def getPets(self):
+    @property
+    def pets(self):
         return self.__pets
     
-
-    def setPets(self,novoPet):
+    @pets.setter
+    def pets(self,novoPet):
         self.__pets.append(novoPet)
     
-    
-    def getCpf(self):
+    @property
+    def cpf(self):
         return self.__cpf
     
-   
-    def getNome(self):
+    @property
+    def nome(self):
         return self.__nome
+    @property
+    def status(self):
+        return self.__status
+
+    @status.setter
+    def status(self,novoStatus):
+        self.__status=novoStatus
 
     def __str__(self):
         return str(str(self.__cpf) + ' - ' + self.__nome)
