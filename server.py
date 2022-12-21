@@ -187,12 +187,12 @@ def limpaTosa(client,username,usuario):
         send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status}!')
         time.sleep(12)
         usuario.status = "PRONTO"
-        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
+        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado!\nDigite [QUI] para sair do chat')
     else:
         time.sleep(12)
         usuario.status='PRONTO'
         fila_tosa.desenfileira() #retorna o que saiu da fila
-        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
+        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado!\nDigite [QUIT] para sair do chat')
        
      
 # Desinfileira a fila do Vet e define que o pet esta pronto para ser buscado
@@ -204,12 +204,12 @@ def limpaMedico(client,username,usuario):
         send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status}!')
         time.sleep(12)
         usuario.status = "PRONTO"
-        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
+        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \nDigite [QUIT] para sair do chat')
     else:
         time.sleep(12)
         usuario.status='PRONTO'
-        fila_tosa.desenfileira() #retorna o que saiu da fila
-        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
+        fila_vet.desenfileira() #retorna o que saiu da fila
+        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \nDigite [QUIT] para sair do chat')
 
 
 # rodando todo o main()!
