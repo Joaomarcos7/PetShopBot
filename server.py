@@ -5,11 +5,11 @@ from FilaEncadeada import Fila,Head,No
 from threading import Thread, Semaphore
 from ArvoreBinariaBusca import ArvoreBinaria
 from user import User
-#from arvore import AVLTree
-##from Arvore import AVLTree,Node
+
+#GLOBAIS
 
 HOST = '127.0.0.1'
-PORT = 1234 # You can use any port between 0 to 65535
+PORT = 1234 
 LISTENER_LIMIT = 20
 active_clients =[] 
 fila_tosa=Fila()
@@ -21,10 +21,9 @@ semaforo=Semaphore(1)
 arvore=ArvoreBinaria()
 status=''
 
-#arvore=AVLTree()
-##Arvore=AVLTree()
 
-# Function to listen for upcoming messages from a client
+
+# Função para escutar as mensagens enviadas por um cliente
 
 def listen_for_messages(client, username):
     
@@ -32,59 +31,60 @@ def listen_for_messages(client, username):
 
         message = client.recv(2048).decode('utf-8')
         if message != '':
-            final_msg = username + '->' + message
+            final_msg = username + '->' + message #concatena o nome do usuario com a mensagem
             send_message_to_client(client,final_msg)
-            if message.isnumeric() and len(message)>10:
+            if message.isnumeric() and len(message)>10: #verifica se o a mensagem é um cpf
                 cpf=message
-                if arvore.busca(cpf):
+                if arvore.busca(cpf): #verifica se o cpf já está cadastrado
                     send_message_to_client(client,f'SERVER-> Olá Seja bem vindo de volta {username}!')
                     time.sleep(1)
-                    for i in active_clients:
+                    for i in active_clients: #itera sobre a lista de clientes ativos para buscar seu objeto USER
                         if i.cpf==cpf:
                             usuario=i
                     script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3- Consultar meu Pet"
                     send_message_to_client(client,script)
                 else:
+                    semaforo.acquire()
                     send_message_to_client(client,'SERVER-> Percebemos que voce ainda nao tem cadastro...')
                     time.sleep(1)
-                    usuario=User(cpf,username)
-                    active_clients.append(usuario)
+                    usuario=User(cpf,username) #cria um objeto USER
+                    arvore.add(cpf) #adiciona o cpf na estrutura de arvore
+                    active_clients.append(usuario) #adiciona o objeto na lista de clientes ativos
                     send_message_to_client(client,'SERVER->Nos informe nome do seu pet, tipo do pelo e tipo do animal\n(Ex: bolt,curto,cachorro)')
-            if len(message)>7 and message.isnumeric()==False:
-                pet=message.split(',') ##array 
-                usuario.pets=pet #adicionou pet no objeto usuario
-                arvore.add(cpf)
-                #print(arvore.preordem())
+                    semaforo.release()
+            if len(message)>7 and message.isnumeric()==False: #verifica se a mensagem é um PET
+                pet=message.split(',') #separa a mensagem em uma lista
+                usuario.pets=pet    #adiciona o pet na lista de pets do usuario
                 send_message_to_client(client,'SERVER->cadastro concluido com sucesso!')
                 time.sleep(1)
-                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas/dia)"+ '\n2- Agenda Médica (10 vagsa/dia)' + "\n3- Consultar meu Pet cadastrado"
+                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas/dia)"+ '\n2- Agenda Médica (10 vagas/dia)' + "\n3- Consultar meu Pet cadastrado" 
                 send_message_to_client(client,script)
 
 
 
             if message == '1':
                 semaforo.acquire()
-                if fila_tosa.tamanho()<10:
+                if fila_tosa.temlimite(): #verifica se a fila de tosa tem vagas
                     fila_tosa.enfileira(cpf)
                     print(fila_tosa.busca(cpf))
                     semaforo.release()
                     time.sleep(1)
                     
-                    if fila_tosa.busca(cpf)==1:
-                        usuario.status='EM TOSA...'
-                        send_message_to_client(client,f'SERVER-> {usuario.status}')
-                        threading.Thread(target=limpaTosa,args=(client, username,usuario)).start()
+                    if fila_tosa.busca(cpf)==1: #verifica se o usuario é o primeiro da fila
+                        usuario.status='EM TOSA...' 
+                        send_message_to_client(client,f'SERVER-> Você é o primeiro da fila! entao seu pet ja esta{usuario.status}')
+                        threading.Thread(target=limpaTosa,args=(client, username,usuario)).start() #chama a função limpaTosa em uma thread para que haja contagem do pet na tosa e desfileire.
                     else:
                         usuario.status='AGUARDANDO...'
-                        send_message_to_client(client,f'SERVER->Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa! {usuario.status}')
+                        send_message_to_client(client,f'SERVER->Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa! Status:{usuario.status}')
                         
                 
-                else:
-                    send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã!')
+                else: #se a fila de tosa estiver lotada
+                    send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã! digite QUIT para sair')
                     
                 
                
-            elif message =='2':
+            elif message =='2': 
                 semaforo.acquire()
                 if fila_vet.tamanho()<10:
                     fila_vet.enfileira(usuario.nome())
@@ -95,7 +95,7 @@ def listen_for_messages(client, username):
                     if fila_tosa.busca(cpf)==1:
                         usuario.status='EM CONSULTA...'
                         send_message_to_client(client,f'SERVER-> {usuario.status}')
-                        threading.Thread(target=limpaTosa,args=(client, username,usuario)).start()
+                        threading.Thread(target=limpaMedico,args=(client, username,usuario)).start() #chama a função limpaMedico em uma thread para que haja contagem do pet na consulta e desfileire.
                     else:
                         usuario.status='AGUARDANDO...'
                         send_message_to_client(client,f'SERVER->Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa! {usuario.status}')
@@ -104,18 +104,15 @@ def listen_for_messages(client, username):
                     send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã!')
                     
                 
-            elif message =='3':
-                #pets=usuario.getPets()
-               
+            elif message =='3':    #verifica se o usuario quer consultar seu pet
                 send_message_to_client(client,f"SERVER->{username},seu Pet cadastrado é:")
-                pets=usuario.pets
+                pets=usuario.pets #pega a lista de pets do usuario
                 time.sleep(1)
                 send_message_to_client(client,f'SERVER->{pets[0][0]} e seu status é {usuario.status}')
             else:
                 pass #ignora caso nao haja mensagem do servidor
             if message== 'QUIT':   
                 send_message_to_client(client,'SERVER->Você saiu do chat')
-                #active_clients.remove([username, client])
                 client.close()
                 break
                 
@@ -123,28 +120,19 @@ def listen_for_messages(client, username):
             print(f" SERVER->A mensagem do cliente {username} é vazia")
 
 
-# Function to send message to a single client
+# Função para Enviar Mensagem a um cliente
+
 def send_message_to_client(client, message):
-    client.sendall(message.encode())
+    client.sendall(message.encode()) #envia a mensagem para o cliente
 
-# Function to send any new message to all the clients that
-# are currently connected to this server
-#def send_messages_to_all(message):
-    
-    #for user in active_clients:
-
-        #send_message_to_client(user[1], message)
-
-# Function to handle client
+# Função para tratar o cliente
 def client_handler(client):
     
-    # Server will listen for client message that will
-    # Contain the username
+    # Server vai lidar com o username do cliente e dar o script de boas vindas
     while 1:
 
         username = client.recv(2048).decode('utf-8')
         if username != '':
-            #active_clients.append((username, client))
             prompt_message = "SERVER->" + f"{username} added to the chat"
             send_message_to_client(client,prompt_message)
             welcome='SERVER->' + f"Olá {username} Seja bem vindo ao nosso Pet Shop!"
@@ -152,62 +140,62 @@ def client_handler(client):
             send_message_to_client(client,welcome)
             time.sleep(1.5)
             send_message_to_client(client,pergunta)
-            
             break
         else:
             print("Nome do Cliente esta vazio")
         
     
-
+# Thread- Função para ouvir as mensagens dos clientes
     threading.Thread(target=listen_for_messages, args=(client, username, )).start()
 
-# Main function
+# MAIN 
 def main():
 
-    # Creating the socket class object
-    # AF_INET: we are going to use IPv4 addresses
-    # SOCK_STREAM: we are using TCP packets for communication
+    # Criação socket objeto 
+    # AF_INET:  utilizando endereços IPV4
+    # SOCK_STREAM: utlizando Protocolo TCP
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Creating a try catch block
+    
     try:
-        # Provide the server with an address in the form of
-        # host IP and port
+        #Conecta o server ao host e porta e tenta rodar o server
         server.bind((HOST, PORT))
-        print(f"Running the server on {HOST} {PORT}")
+        print(f"Server rodando em  {HOST} {PORT}")
     except:
-        print(f"Unable to bind to host {HOST} and port {PORT}")
+        print(f"Incapaz de rodar o server no host {HOST} e na porta {PORT}")
 
-    # Set server limit
+    # Define o limite de conexões
     server.listen(LISTENER_LIMIT)
 
-    # This while loop will keep listening to client connections
+        #Loop para ficar escutando as conexões dos clientes!
     while 1:
 
-        client, address = server.accept()
+        client, address = server.accept() #retorna uma array com o cliente e o endereço
         print(f"Conectado ao cliente {address[0]} {address[1]}")
 
-
+    # Thread- Função para tratar o cliente
         threading.Thread(target=client_handler, args=(client, )).start()
-        
+
+
+#Desinfileira a fila da tosa e define que o pet esta pronto para ser buscado
 
 def limpaTosa(client,username,usuario):   
-        time.sleep(10)
+        time.sleep(30)
         usuario.status='PRONTO'
         fila_tosa.desenfileira() #retorna o que saiu da fila
         send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite QUIT para sair do chat')
        
      
-
+#Desinfileira a fila do Vet e define que o pet esta pronto para ser buscado
 
 def limpaMedico(client,username,usuario):
-    time.sleep(10)
+    time.sleep(30)
     usuario.status='PRONTO'
     fila_vet.desenfileira() #retorna o que saiu da fila
     send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status}para ser buscado! \ndigite QUIT para sair do chat')
 
 
-
+#rodando todo o main()!
 
 if __name__ == '__main__':
     main()

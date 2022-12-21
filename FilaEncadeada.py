@@ -32,6 +32,7 @@ class Head:
         self.inicio = None
         self.fim = None
         self.tamanho = 0
+     
 
 class Fila:
     def __init__(self):
@@ -46,7 +47,13 @@ class Fila:
     def __len__(self):
         return self.__head.tamanho
 
-    
+    def temlimite(self): #metodo novo 
+        if self.tamanho==10:
+            return False
+        else:
+           return True
+
+
     def enfileira(self, carga:any):
         novo = No(carga)
 

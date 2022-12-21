@@ -1,8 +1,8 @@
 import socket
 import threading
-import tkinter as tk
+import tkinter as tk #biblioteca para criar a GUI
 from tkinter import scrolledtext
-from tkinter import messagebox
+from tkinter import messagebox 
 
 HOST = '127.0.0.1'
 PORT = 1234
@@ -15,24 +15,26 @@ FONT = ("Helvetica", 17)
 BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
 
-# Creating a socket object
-# AF_INET: we are going to use IPv4 addresses
-# SOCK_STREAM: we are using TCP packets for communication
+
+#criação objeto socket definindo o tipo de conexão
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+#Adiciona a mensagem na GUI
 def add_message(message):
     message_box.config(state=tk.NORMAL)
     message_box.insert(tk.END, message + '\n')
     message_box.config(state=tk.DISABLED)
 
+
+
+#Função para o cliente se conectar ao servidor
 def connect():
 
-    # try except block
     try:
 
-        # Connect to the server
+       
         client.connect((HOST, PORT))
-        print("Successfully connected to server")
+        print("[SERVER] Conectado com sucesso ao servidor")
         add_message("[SERVER] Conectado com sucesso ao servidor")
     except:
         messagebox.showerror("Não foi possível conectar", f"Não foi possível se conectar ao servidor {HOST} {PORT}")
@@ -48,6 +50,7 @@ def connect():
     username_textbox.config(state=tk.DISABLED)
     username_button.config(state=tk.DISABLED)
 
+#Função para mandar mensagem para o servidor
 def send_message():
     message = message_textbox.get()
     if message != '':
@@ -61,7 +64,7 @@ def send_message():
     else:
         messagebox.showerror("Mensagem vazia", "Mensagem não pode ser vazia")
 
-
+# GUI
 root = tk.Tk()
 root.geometry("600x600")
 root.title("Messenger Client")
@@ -100,24 +103,25 @@ message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
 
+#Escuta em um loop as mensagens do servidor e formata elas para serem exibidas na GUI.
 def listen_for_messages_from_server(client):
 
     while 1:
-
+            # Recebe a mensagem do servidor
         message = client.recv(2048).decode('utf-8')
         if message != '':
-            username = message.split("->")[0]
+            username = message.split("->")[0] 
             print(message.split('->'))
-            content = message.split("->")[1]
-            if message=='QUIT':
+            content = message.split("->")[1] # mensagem do cliente
+            if content=='QUIT': # se o cliente sair do chat
                 add_message("[SERVER]->Cliente saiu do chat")
-                client.close()
+                client.close() # fecha a conexão
                 break
 
-            add_message(f"[{username}] {content}")
-            
+            add_message(f"[{username}] {content}") # exibe a mensagem do cliente na GUI
+             
         else:
-            messagebox.showerror("Erro", "Messagem do cliente é vazia")
+            messagebox.showerror("Erro", "Messagem do cliente é vazia") 
 
 # main function
 def main():

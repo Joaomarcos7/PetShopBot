@@ -4,7 +4,7 @@ class User:
         self.__cpf = cpf
         self.__nome = nome
         self.__pets = list()
-        self.__status=None
+        self.__status='Indefinido'
     
     @property
     def pets(self):
