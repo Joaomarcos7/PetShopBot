@@ -61,7 +61,7 @@ def listen_for_messages(client, username):
 
             if message == '1':
                 semaforo.acquire()
-                if fila_tosa.temlimite(): # verifica se a fila de tosa tem vagas
+                if fila_tosa.temlimite()==True: # verifica se a fila de tosa tem vagas
                     fila_tosa.enfileira(cpf)
                     print(fila_tosa.busca(cpf))
                     semaforo.release()
@@ -77,13 +77,13 @@ def listen_for_messages(client, username):
                         
                 
                 else: # se a fila de tosa estiver lotada
-                    send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã! digite [QUIT]para sair')
+                    send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã! \nDigite [QUIT] para sair')
                     
                 
                
             elif message =='2': 
                 semaforo.acquire()
-                if fila_vet.tamanho()<10:
+                if fila_vet.temlimite()==True:
                     fila_vet.enfileira(cpf)
                     print(fila_vet.busca(cpf))
                     semaforo.release()
@@ -98,7 +98,7 @@ def listen_for_messages(client, username):
                         send_message_to_client(client,f'SERVER-> Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa! Status: {usuario.status}')
                         
                 else:
-                    send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã!')
+                    send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã! \nDigite [QUIT] para sair')
                     
                 
             elif message =='3':    # verifica se o usuario quer consultar seu pet
@@ -177,16 +177,16 @@ def main():
 # Desinfileira a fila da tosa e define que o pet esta pronto para ser buscado
 
 def limpaTosa(client,username,usuario):   
-        time.sleep(30)
-        usuario.status='PRONTO'
-        fila_tosa.desenfileira() #retorna o que saiu da fila
-        send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
+    time.sleep(300)
+    usuario.status='PRONTO'
+    fila_tosa.desenfileira() #retorna o que saiu da fila
+    send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT]para sair do chat')
        
      
 # Desinfileira a fila do Vet e define que o pet esta pronto para ser buscado
 
 def limpaMedico(client,username,usuario):
-    time.sleep(30)
+    time.sleep(300)
     usuario.status='PRONTO'
     fila_vet.desenfileira() #retorna o que saiu da fila
     send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \ndigite [QUIT] para sair do chat')

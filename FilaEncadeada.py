@@ -47,8 +47,8 @@ class Fila:
     def __len__(self):
         return self.__head.tamanho
 
-    def temlimite(self): #metodo novo 
-        if self.tamanho==10:
+    def temlimite(self)->bool: # metodo novo 
+        if self.__head.tamanho==10:
             return False
         else:
            return True
