@@ -1,6 +1,6 @@
 import socket
 import threading
-import tkinter as tk #biblioteca para criar a GUI
+import tkinter as tk # biblioteca para criar a GUI
 from tkinter import scrolledtext
 from tkinter import messagebox 
 
@@ -16,10 +16,10 @@ BUTTON_FONT = ("Helvetica", 15)
 SMALL_FONT = ("Helvetica", 13)
 
 
-#criação objeto socket definindo o tipo de conexão
+# criação objeto socket definindo o tipo de conexão
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-#Adiciona a mensagem na GUI
+# Adiciona a mensagem na GUI
 def add_message(message):
     message_box.config(state=tk.NORMAL)
     message_box.insert(tk.END, message + '\n')
@@ -27,7 +27,7 @@ def add_message(message):
 
 
 
-#Função para o cliente se conectar ao servidor
+# Função para o cliente se conectar ao servidor
 def connect():
 
     try:
@@ -50,7 +50,7 @@ def connect():
     username_textbox.config(state=tk.DISABLED)
     username_button.config(state=tk.DISABLED)
 
-#Função para mandar mensagem para o servidor
+# Função para mandar mensagem para o servidor
 def send_message():
     message = message_textbox.get()
     if message != '':
@@ -103,7 +103,7 @@ message_box.config(state=tk.DISABLED)
 message_box.pack(side=tk.TOP)
 
 
-#Escuta em um loop as mensagens do servidor e formata elas para serem exibidas na GUI.
+# Escuta em um loop as mensagens do servidor e formata elas para serem exibidas na GUI.
 def listen_for_messages_from_server(client):
 
     while 1:
