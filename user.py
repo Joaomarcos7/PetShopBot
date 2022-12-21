@@ -13,11 +13,11 @@ class User:
     def setPets(self,novoPet):
         self.__pets.append(novoPet)
     
-    @property
+    
     def getCpf(self):
         return self.__cpf
     
-    @property
+   
     def getNome(self):
         return self.__nome
 

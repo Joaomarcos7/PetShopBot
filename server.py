@@ -46,14 +46,13 @@ def listen_for_messages(client, username):
                     send_message_to_client(client,'SERVER->Nos informe nome do seu pet, tipo do pelo e tipo do animal\n(Ex: bolt,curto,cachorro)')
             if len(message)>7 and message.isnumeric()==False:
                 pet=message.split(',') ##array
-                usuario=User(cpf,username) #criacao usuario
+                usuario=User(cpf,username)   #criacao usuario
                 usuario.setPets(pet)
-                
                 arvore.add(cpf)
                 print(arvore.preordem())
                 send_message_to_client(client,'SERVER->cadastro concluido com sucesso!')
                 time.sleep(1)
-                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3 Consultar meu Pet"
+                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas/dia)"+ '\n2- Agenda Médica (10 vagas/dia)' + "\n3 Consultar meu Pet"
                 send_message_to_client(client,script)
 
 
@@ -61,70 +60,49 @@ def listen_for_messages(client, username):
             if message == '1':
                 semaforo.acquire()
                 if fila_tosa.tamanho()<10:
-                    fila_tosa.enfileira(usuario.getNome())
+                    fila_tosa.enfileira(cpf)
+                    print(fila_tosa.busca(cpf))
                     semaforo.release()
                     time.sleep(1)
                     send_message_to_client(client,f'SERVER->Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa!')
+                    threading.Thread(target=limpaTosa,args=(client, username, )).start()
                 
                 else:
                     send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã!')
                     
-                threading.Thread(target=limpaTosa,args=(client, username, )).start()
+                
                
             elif message =='2':
                 semaforo.acquire()
                 if fila_vet.tamanho()<10:
                     fila_vet.enfileira(usuario.getNome())
+                    print(fila_vet.busca(usuario.getNome()))
                     semaforo.release()
                     time.sleep(1)
                     send_message_to_client(client,f'SERVER->Seu Pet esta agendado para a {fila_vet.tamanho()}° tosa!')
+                    threading.Thread(target=limpaMedico,args=(client, username)).start()
+            
                 
                 else:
                     send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã!')
                     
-                threading.Thread(target=limpaTosa,args=(client, username, )).start()
-            
+                
             elif message =='3':
-                achouUsuario = False
-                for usuario in usuarios:
-                    if usuario.getNome() == username:
-                        achouUsuario = True
-                        info = 'SERVER->Seus pets são: '
-                        send_message_to_client(client,info)
-                        time.sleep(2)
-                        for pet in usuario.getPets():
-                            my_pet = str(pet[0] + ' - ' + pet[1] + ' - ' + pet[2])
-                            send_message_to_client(client, 'SERVER->' + my_pet)
-                
-                if not(achouUsuario):
-                    send_message_to_client(client, "SERVER->Você ainda não cadastrou um pet!")
-                    
-
-                #print(message) #CADASTRO HASH(MESSAGE)
-                #arvore.insert(messsage)
-                #       
+                #pets=usuario.getPets()
+                usuario.getPets()
+                send_message_to_client(client,f"{username},seus Pets cadastrados são:")
+              #  for i in range(len(usuario.getPets())):
+               #     send_message_to_client(client,pets[i][0])
             else:
-                pass
+                pass #ignora caso nao haja mensagem do servidor
             if message== 'QUIT':   
-                for i in range(len(tosa)):
-                    if tosa[i]==username:
-                        tosa.pop(i)
-                        print(tosa)
-                        #if filadeespera.estaVazia() == False:
-                            #tosa.insert(i,filadeespera.desenfileira())
-                    else:
-                        pass
-                for i in range(len(medico)):
-                    if medico[i]==username:
-                        medico.pop(i)
-                        #if filadeespera2.estaVazia() == False:
-                            #medico.insert(i,filadeespera2.desenfileira())
                 send_message_to_client(client,'SERVER->Você saiu do chat')
-                
+                active_clients.remove([username, client])
+                client.close()
                 break
                 
         else:
-            print(f" SERVER->The message send from client {username} is empty")
+            print(f" SERVER->A mensagem do cliente {username} é vazia")
 
 
 # Function to send message to a single client
@@ -195,29 +173,17 @@ def main():
         threading.Thread(target=client_handler, args=(client, )).start()
         
 
-def limpaTosa(client,username):
-    #while filadeespera.estaVazia() == False:   
-        time.sleep(60)
-        for i in tosa:
-            if i==username:
-                tosa.pop(i)
-        #proximo = filadeespera.desenfileira()
-       # tosa.append(proximo)
-        send_message_to_client(client,'Server- Chegou sua vez! Voce esta no medico agora...')
-        print(tosa)
+def limpaTosa(client,username):   
+        time.sleep(30)
+        fila_tosa.desenfileira() #retorna o que saiu da fila
+        send_message_to_client(client,f'Server-> olá {username} Seu pet esta pronto para ser buscado! \ndigite QUIT para sair do chat')
+     
 
 
 def limpaMedico(client,username):
-   # while filadeespera2.estaVazia() == False:   
-        time.sleep(60)
-        for i in medico:
-            if i==username:
-                medico.pop(i)
-      #  proximo = filadeespera2.desenfileira()
-      #  medico.append(proximo)
-        send_message_to_client(client,'Server- Chegou sua vez! Voce esta no medico agora...')
-        print(medico)
-
+    time.sleep(30)
+    fila_vet.desenfileira() #retorna o que saiu da fila
+    send_message_to_client(client,f'Server-> olá {username} Seu pet esta pronto para ser buscado! \ndigite QUIT para sair do chat')
 
 
 
