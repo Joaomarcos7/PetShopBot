@@ -97,7 +97,7 @@ def listen_for_messages(client, username):
                         threading.Thread(target=limpaMedico,args=(client, username,usuario)).start() # chama a função limpaMedico em uma thread para que haja contagem do pet na consulta e desfileire.
                     else:
                         usuario.status='AGUARDANDO...'
-                        send_message_to_client(client,f'SERVER-> Seu Pet esta agendado para a {fila_tosa.tamanho()}° tosa! Status: {usuario.status}')
+                        send_message_to_client(client,f'SERVER-> Seu Pet esta agendado para a {fila_vet.tamanho()}° tosa! Status: {usuario.status}')
                         threading.Thread(target=limpaMedico,args=(client, username,usuario)).start()
                         
                 else:
