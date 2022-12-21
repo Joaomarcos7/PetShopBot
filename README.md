@@ -6,7 +6,7 @@ Aplicação em Python de um Sistema de Gerenciamento de Petshop entre clientes e
 -Uso de Protocolo TCP
 -Uso de Biblioteca Tkinter
 -Uso de Threads e conceito de exclusão mútua
--Utilização de Árvore AVL e Fila Sequencial
+-Utilização de Árvore ABB e Fila Enacadeada
 
 *Participantes:*
 
