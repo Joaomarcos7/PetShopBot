@@ -30,7 +30,7 @@ def listen_for_messages(client, username):
         if message != '':
             final_msg = username + '->' + message # concatena o nome do usuario com a mensagem
             send_message_to_client(client,final_msg)
-            if message.isnumeric() and len(message)>10: # verifica se o a mensagem é um cpf
+            if message.isnumeric() and len(message)==11: # verifica se o a mensagem é um cpf
                 cpf=message
                 if arvore.busca(cpf): # verifica se o cpf já está cadastrado
                     send_message_to_client(client,f'SERVER-> Olá Seja bem vindo de volta {username}!')
@@ -44,15 +44,15 @@ def listen_for_messages(client, username):
                     semaforo.acquire()
                     send_message_to_client(client,'SERVER-> Percebemos que voce ainda nao tem cadastro...')
                     time.sleep(1)
-                    usuario=User(cpf,username) # cria um objeto USER
-                    arvore.add(cpf) # adiciona o cpf na estrutura de arvore
+                    usuario=User(cpf,username)      # cria um objeto USER
+                    arvore.add(cpf)                 # adiciona o cpf na estrutura de arvore
                     active_clients.append(usuario) # adiciona o objeto na lista de clientes ativos
                     send_message_to_client(client,'SERVER->Nos informe nome do seu pet, tipo do pelo e tipo do animal\n(Ex: bolt,curto,cachorro)')
                     semaforo.release()
             if len(message)>7 and message.isnumeric()==False: # verifica se a mensagem é um PET
                 pet=message.split(',') # separa a mensagem em uma lista
                 usuario.pets=pet    # adiciona o pet na lista de pets do usuario
-                send_message_to_client(client,'SERVER->cadastro concluido com sucesso!')
+                send_message_to_client(client,'SERVER->cadastro concluído com sucesso!')
                 time.sleep(1)
                 script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet cadastrado \nQUIT- para sair do chat" 
                 send_message_to_client(client,script)
@@ -107,13 +107,13 @@ def listen_for_messages(client, username):
                     send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã! \nDigite [QUIT] para sair')
                     
                 
-            elif message =='3':    # verifica se o usuario quer consultar seu pet
+            elif message =='3':    # infomra o pet cadastrado e seu status atual
                 send_message_to_client(client,f"SERVER-> {username},seu Pet cadastrado é:")
                 pets=usuario.pets # pega a lista de pets do usuario
                 time.sleep(1)
                 send_message_to_client(client,f'SERVER-> {pets[0][0]} e seu status é {usuario.status}')
             else:
-                pass # ignora caso nao haja mensagem do servidor
+                pass     # ignora caso nao haja mensagem do servidor
             if message == 'QUIT':   
                 send_message_to_client(client,'SERVER-> Você saiu do chat')
                 client.close()
@@ -194,7 +194,7 @@ def limpaTosa(client,username,usuario):
     else:
         time.sleep(12)
         usuario.status='PRONTO'
-        fila_tosa.desenfileira() #retorna o que saiu da fila
+        fila_tosa.desenfileira() # saiu da fila o primeiro da fila
         send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado!\nDigite [QUIT] para sair do chat')
        
      
@@ -211,7 +211,7 @@ def limpaMedico(client,username,usuario):
     else:
         time.sleep(12)
         usuario.status='PRONTO'
-        fila_vet.desenfileira() #retorna o que saiu da fila
+        fila_vet.desenfileira() # saiu da fila o primeiro da fila
         send_message_to_client(client,f'Server-> Olá {username} Seu pet esta {usuario.status} para ser buscado! \nDigite [QUIT] para sair do chat')
 
 
