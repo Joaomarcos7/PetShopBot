@@ -11,7 +11,7 @@ from user import User
 HOST = '127.0.0.1'
 PORT = 1234 
 LISTENER_LIMIT = 20
-active_clients = [] 
+active_clients = [] #lista dos clientes que fizeram cadastro de Seus Pets, guardando suas instancias do objeto User
 fila_tosa = Fila()    # fila para tosa
 fila_vet = Fila()     # fila para consulta veterinária
 semaforo = Semaphore(1)
@@ -38,7 +38,7 @@ def listen_for_messages(client, username):
                     for i in active_clients: # itera sobre a lista de clientes ativos para buscar seu objeto USER
                         if i.cpf==cpf:
                             usuario=i
-                    script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa"+ '\n2- Agenda Médica' + "\n3- Consultar meu Pet"
+                    script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet \n QUIT- para sair do chat"
                     send_message_to_client(client,script)
                 else:
                     semaforo.acquire()
@@ -54,7 +54,7 @@ def listen_for_messages(client, username):
                 usuario.pets=pet    # adiciona o pet na lista de pets do usuario
                 send_message_to_client(client,'SERVER->cadastro concluido com sucesso!')
                 time.sleep(1)
-                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas/dia)"+ '\n2- Agenda Médica (10 vagas/dia)' + "\n3- Consultar meu Pet cadastrado" 
+                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet cadastrado \n QUIT- para sair do chat" 
                 send_message_to_client(client,script)
 
 
@@ -79,7 +79,9 @@ def listen_for_messages(client, username):
                         
                 
                 else: # se a fila de tosa estiver lotada
+                    semaforo.release()
                     send_message_to_client(client,'SERVER-> As agendas da tosa hoje estão lotadas... volte amanhã! \nDigite [QUIT] para sair')
+                
                     
                 
                
@@ -101,6 +103,7 @@ def listen_for_messages(client, username):
                         threading.Thread(target=limpaMedico,args=(client, username,usuario)).start()
                         
                 else:
+                    semaforo.release()
                     send_message_to_client(client,'SERVER-> As agendas da consulta veterinária hoje estão lotadas... volte amanhã! \nDigite [QUIT] para sair')
                     
                 
