@@ -38,7 +38,7 @@ def listen_for_messages(client, username):
                     for i in active_clients: # itera sobre a lista de clientes ativos para buscar seu objeto USER
                         if i.cpf==cpf:
                             usuario=i
-                    script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet \n QUIT- para sair do chat"
+                    script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet \nQUIT- para sair do chat"
                     send_message_to_client(client,script)
                 else:
                     semaforo.acquire()
@@ -54,7 +54,7 @@ def listen_for_messages(client, username):
                 usuario.pets=pet    # adiciona o pet na lista de pets do usuario
                 send_message_to_client(client,'SERVER->cadastro concluido com sucesso!')
                 time.sleep(1)
-                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet cadastrado \n QUIT- para sair do chat" 
+                script="SERVER-> Oferecemos varios serviços... por favor nos indique qual voce gostaria de usufruir:" + "\n1- Banho e Tosa (10 vagas na fila)"+ '\n2- Agendamento Médico (10 vagas na fila)' + "\n3- Consultar meu Pet cadastrado \nQUIT- para sair do chat" 
                 send_message_to_client(client,script)
 
 
@@ -136,7 +136,7 @@ def client_handler(client):
 
         username = client.recv(2048).decode('utf-8')
         if username != '':
-            prompt_message = "SERVER->" + f"{username} added to the chat"
+            prompt_message = "SERVER->" + f"{username} adicionado ao chat"
             send_message_to_client(client,prompt_message)
             welcome='SERVER->' + f"Olá {username} Seja bem vindo ao nosso Pet Shop!"
             pergunta='SERVER ->' + 'Nos informe seu CPF:'
