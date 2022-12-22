@@ -113,7 +113,7 @@ def listen_for_messages(client, username):
                 time.sleep(1)
                 send_message_to_client(client,f'SERVER-> {pets[0][0]} e seu status é {usuario.status}')
             else:
-                pass     # ignora caso nao haja mensagem do servidor
+                pass     # ignora caso nao haja mensagem do servidor 
             if message == 'QUIT':   
                 send_message_to_client(client,'SERVER-> Você saiu do chat')
                 client.close()
